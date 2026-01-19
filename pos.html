@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>POS — TakoyakiS POS</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* Compact Product Grid */
+    #productGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Fits 5-6 items per row */
+        gap: 12px;
+        max-height: 70vh; /* Limits height */
+        overflow-y: auto; /* Makes the grid itself scrollable if you have 100+ items */
+        padding: 10px;
+    }
+
+    /* Smaller, Professional Item Cards */
+    .pos-product-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.1s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 120px; /* Fixed height for uniformity */
+    }
+
+    .pos-product-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-color: var(--accent-color);
+    }
+
+    .pos-product-card .title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+        line-height: 1.2;
+    }
+
+    .pos-product-card .price {
+        color: var(--primary-color);
+        font-weight: 800;
+        font-size: 1rem;
+    }
+
+    .pos-product-card .stock {
+        font-size: 0.7rem;
+        color: #888;
+    }
+
+    /* Horizontal Scrollable Categories */
+    .category-tabs {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        gap: 10px;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        scrollbar-width: thin; /* For Firefox */
+    }
+
+    .category-tabs::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .category-tabs::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
+
+    .category-tabs button {
+        flex: 0 0 auto; /* Prevents buttons from shrinking */
+        padding: 8px 18px;
+        font-size: 0.85rem;
+    }
+
+    /* Layout Adjustments */
+    .pos-main-layout {
+        display: grid;
+        grid-template-columns: 1fr 380px; /* Bigger area for products */
+        gap: 20px;
+        align-items: start;
+    }
+</style>
+
+</head>
+<body>
+<script>
+  if (sessionStorage.getItem("userLogged") !== "yes") {
+      window.location.href = "login.html";
+  }
+</script>
+
+<header class="topbar">
+  <div class="brand-info">
+    <img src="css/img/logo.png" alt="Logo" class="logo-image">
+    <div>
+      <span class="brand-title">CHICKS MO UNLI</span>
+      <span class="brand-sub">Management System</span>
+    </div>
+  </div>
+
+  <div class="user-tag" style="display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.15); padding: 5px 15px; border-radius: 50px; border: 1px solid var(--accent-color);">
+    <div style="text-align: right;">
+        <small style="display: block; font-size: 0.65rem; color: var(--accent-color); text-transform: uppercase; font-weight: bold;">Current User</small>
+        <span id="navUserName" style="color: white; font-weight: 600; font-size: 0.9rem;">---</span>
+    </div>
+    <span id="navUserRole" style="font-size: 0.7rem; background: var(--accent-color); color: white; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; font-weight: bold;">---</span>
+  </div>
+
+  <nav class="navlinks">
+    <a href="dashboard.html">Dashboard</a> 
+    <a href="pos.html">POS</a>
+    <a href="inventory.html">Inventory</a>
+    <a href="sales.html">Sales</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+</header>
+
+<script>
+  // This script runs on every page to populate the User Tag from session storage
+  document.addEventListener("DOMContentLoaded", () => {
+      const name = sessionStorage.getItem("userName") || "Unknown";
+      const role = sessionStorage.getItem("userRole") || "Staff";
+      
+      const navName = document.getElementById("navUserName");
+      const navRole = document.getElementById("navUserRole");
+      
+      if(navName) navName.innerText = name;
+      if(navRole) navRole.innerText = role;
+
+      // Auto-highlight the active link based on the current page
+      const currentFile = window.location.pathname.split("/").pop();
+      document.querySelectorAll(".navlinks a").forEach(link => {
+          if(link.getAttribute("href") === currentFile) {
+              link.classList.add("active");
+          }
+      });
+  });
+</script>
+
+<main class="pos-main-layout">
+
+    <section class="card pos-products-card">
+    <h2>Select Products</h2>
+    
+    <div style="margin-bottom: 15px; position: relative;">
+        <input type="text" id="posSearch" placeholder="🔍 Search product name..." 
+               style="width: 100%; padding: 12px 40px 12px 15px; border-radius: 25px; border: 2px solid #eee; font-size: 1rem; margin: 0;">
+    </div>
+    
+    <div id="categoryTabs" class="category-tabs"></div>
+
+    <div id="productGrid"></div>
+</section>
+
+    <section class="card pos-checkout-card">
+      <h2>Order Summary</h2>
+      
+      <div id="employeeStatus">
+        </div>
+      
+      <div id="posListSummary">
+      </div>
+      
+      <hr style="margin: 20px 0;">
+      
+      <div style="display: flex; justify-content: space-between; font-size: 1em;">
+        <span>Subtotal (Pre-Tax):</span>
+        <span>₱<span id="subtotalAmount">0.00</span></span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 1em; color: green;">
+        <span>Tax (<span id="taxRateDisplay">0</span>%):</span>
+        <span>₱<span id="taxAmount">0.00</span></span>
+      </div>
+      
+      <hr style="margin: 5px 0 20px 0;">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.4em; font-weight: bold;">
+        <span>GRAND TOTAL:</span> 
+        <span>₱<span id="totalAmount">0.00</span></span>
+      </div>
+      
+      <hr style="margin: 20px 0;">
+
+      <div class="payment-section">
+  <div style="margin-bottom: 15px;">
+    <label for="paymentMethod" style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem;">Payment Method:</label>
+    <select id="paymentMethod" class="btn" style="width: 100%; background: white; color: black; border: 1px solid #ccc; height: 45px; font-size: 1rem;">
+      <option value="Cash">💵 Cash Payment</option>
+      <option value="E-Wallet">📱 E-Wallet (GCash/Maya)</option>
+    </select>
+  </div>
+
+  <label for="paymentReceived">Payment Received (₱):</label>
+  <input type="number" id="paymentReceived" placeholder="0.00" step="0.01" min="0">
+  
+  <div style="margin-top: 10px; font-size: 1.1em;">
+    <strong>Change: ₱<span id="changeAmount">0.00</span></strong>
+  </div>
+</div>
+      
+      <div style="margin-top: 24px; text-align: right;">
+        <button id="cancelOrderBtn" class="btn">Cancel Order</button>
+        <button id="checkoutBtn" class="btn primary">Complete Transaction</button>
+      </div>
+    </section>
+  
+    <section class="card pos-receipt-card" id="receiptCard" style="display: none;">
+      <h2>Transaction Receipt</h2>
+      <div id="receiptContent"></div>
+      <div style="margin-top: 20px; text-align: center;">
+        <button class="btn" onclick="window.print()">Print Receipt</button>
+      </div>
+    </section>
+</main>
+
+<script src="js/database.js"></script>
+<script src="js/pos.js"></script>
+</body>
+</html>

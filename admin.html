@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin — TakoyakiS POS</title>
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+<script>
+  // Access control check
+  const role = sessionStorage.getItem("userRole");
+  if (sessionStorage.getItem("userLogged") !== "yes") {
+      window.location.href = "login.html";
+  } else if (role !== "admin") {
+      alert("Access Denied: Owner clearance required.");
+      window.location.href = "pos.html"; // CHANGE index.html TO pos.html
+  }
+</script>
+
+<header class="topbar">
+  <div class="brand-info">
+    <img src="css/img/logo.png" alt="Logo" class="logo-image">
+    <div>
+      <span class="brand-title">CHICKS MO UNLI</span>
+      <span class="brand-sub">Management System</span>
+    </div>
+  </div>
+
+  <div class="user-tag" style="display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.15); padding: 5px 15px; border-radius: 50px; border: 1px solid var(--accent-color);">
+    <div style="text-align: right;">
+        <small style="display: block; font-size: 0.65rem; color: var(--accent-color); text-transform: uppercase; font-weight: bold;">Current User</small>
+        <span id="navUserName" style="color: white; font-weight: 600; font-size: 0.9rem;">---</span>
+    </div>
+    <span id="navUserRole" style="font-size: 0.7rem; background: var(--accent-color); color: white; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; font-weight: bold;">---</span>
+  </div>
+
+  <nav class="navlinks">
+    <a href="dashboard.html">Dashboard</a> 
+    <a href="pos.html">POS</a>
+    <a href="inventory.html">Inventory</a>
+    <a href="sales.html">Sales</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+</header>
+
+<script>
+  // This script runs on every page to populate the User Tag from session storage
+  document.addEventListener("DOMContentLoaded", () => {
+      const name = sessionStorage.getItem("userName") || "Unknown";
+      const role = sessionStorage.getItem("userRole") || "Staff";
+      
+      const navName = document.getElementById("navUserName");
+      const navRole = document.getElementById("navUserRole");
+      
+      if(navName) navName.innerText = name;
+      if(navRole) navRole.innerText = role;
+
+      // Auto-highlight the active link based on the current page
+      const currentFile = window.location.pathname.split("/").pop();
+      document.querySelectorAll(".navlinks a").forEach(link => {
+          if(link.getAttribute("href") === currentFile) {
+              link.classList.add("active");
+          }
+      });
+  });
+</script>
+
+<main class="single-container">
+  <section class="card" id="adminGate">
+    <h2>Admin Access Required</h2>
+    <p class="muted">You must be logged in as an Admin to view this page.</p>
+  </section>
+    
+  <div id="adminContent" style="display: none;">
+    <section class="card">
+      <h2>System Security</h2>
+      <div class="form-row">
+        <label>Update Admin PIN:</label>
+        <input id="setAdminPass" type="number" placeholder="New 4-digit PIN" min="0" max="9999" style="max-width:150px;"/>
+        <button class="btn primary" onclick="setAdminPassword()">Update Admin PIN</button>
+      </div>
+      <div class="form-row" style="margin-top: 20px; gap: 10px;">
+        <button class="btn primary" onclick="resetSystem()">Reset System (Wipe All)</button>
+      </div>
+    </section>
+    
+    <section class="card">
+      <h2>System Configuration</h2>
+      <div class="form-row">
+        <label for="taxRate">Tax Rate (%)</label>
+        <input id="taxRate" type="number" step="0.01" min="0" max="100" style="max-width:150px;" />
+        <label for="lowStockThreshold">Low Stock Threshold</label>
+        <input id="lowStockThreshold" type="number" min="1" style="max-width:150px;" />
+        <button class="btn primary" onclick="setSystemConfig()">Save Settings</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Employee Management</h2>
+      <div class="form-row">
+        <input id="employeeName" type="text" placeholder="Employee Name" />
+        <input id="employeePin" type="number" placeholder="4-digit PIN" min="0" max="9999" style="max-width:120px;" />
+        
+        <select id="employeeRole" class="btn" style="background: white; color: black; border: 1px solid #ccc;">
+            <option value="employee">Employee (POS Only)</option>
+            <option value="manager">Manager (POS, Inv, Sales)</option>
+            <option value="admin">Admin/Owner (All Access)</option>
+        </select>
+
+        <button class="btn primary" onclick="addEmployee()">Add User</button>
+      </div>
+      <div class="employee-list" id="employeeList" style="margin-top: 20px;"></div>
+    </section>
+  </div>
+</main>
+
+<script src="js/database.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "ProPOS - Offline POS",
+  "short_name": "ProPOS",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b5ed7",
+  "icons": []
+}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Inventory — TakoyakiS POS</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<script>
+  const role = sessionStorage.getItem("userRole");
+  if (sessionStorage.getItem("userLogged") !== "yes") {
+      window.location.href = "login.html";
+  } else if (role !== "admin" && role !== "manager") {
+      alert("Access Denied: Managers or Admins only.");
+      window.location.href = "pos.html"; // CHANGE index.html TO pos.html
+  }
+</script>
+
+<header class="topbar">
+  <div class="brand-info">
+    <img src="css/img/logo.png" alt="Logo" class="logo-image">
+    <div>
+      <span class="brand-title">CHICKS MO UNLI</span>
+      <span class="brand-sub" id="pageSubtitle">Management System</span>
+    </div>
+  </div>
+
+  <div class="user-tag" style="display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.15); padding: 5px 15px; border-radius: 50px; border: 1px solid var(--accent-color);">
+    <div style="text-align: right;">
+        <small style="display: block; font-size: 0.65rem; color: var(--accent-color); text-transform: uppercase; font-weight: bold;">Current User</small>
+        <span id="navUserName" style="color: white; font-weight: 600; font-size: 0.9rem;">---</span>
+    </div>
+    <span id="navUserRole" style="font-size: 0.7rem; background: var(--accent-color); color: white; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; font-weight: bold;">---</span>
+  </div>
+
+  <nav class="navlinks">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="pos.html">POS</a>
+    <a href="inventory.html">Inventory</a>
+    <a href="sales.html">Sales</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+</header>
+
+<script>
+  // Add this script right after the header to make the user tag work on every page
+  document.addEventListener("DOMContentLoaded", () => {
+      const name = sessionStorage.getItem("userName") || "Unknown";
+      const role = sessionStorage.getItem("userRole") || "Staff";
+      
+      if(document.getElementById("navUserName")) document.getElementById("navUserName").innerText = name;
+      if(document.getElementById("navUserRole")) document.getElementById("navUserRole").innerText = role;
+
+      // Auto-highlight the active tab
+      const currentFile = window.location.pathname.split("/").pop();
+      document.querySelectorAll(".navlinks a").forEach(link => {
+          if(link.getAttribute("href") === currentFile) {
+              link.classList.add("active");
+          }
+      });
+  });
+</script>
+
+<main class="inventory-workspace" style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; padding: 20px; align-items: start;">
+    
+    <div class="left-column">
+        <section class="card">
+    <h2 style="margin-top:0;">Add/Update Product</h2>
+    <div class="inventory-form-grid">
+        <div class="form-group span-2">
+            <label for="productName">Product Name</label>
+            <input id="productName" type="text" placeholder="e.g., Spicy Takoyaki (4pcs)" />
+        </div>
+        
+        <div class="form-group">
+            <label for="productCategory">Category</label>
+            <input id="productCategory" type="text" placeholder="e.g., Main, Drinks" />
+        </div>
+        <div class="form-group">
+            <label for="productQty">Quantity in Stock</label>
+            <input id="productQty" type="number" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+            <label for="productCostPrice">Cost Price (COGS)</label>
+            <input id="productCostPrice" type="number" placeholder="₱0.00" step="0.01" />
+        </div>
+        <div class="form-group">
+            <label for="productPrice">Selling Price (Gross)</label>
+            <input id="productPrice" type="number" placeholder="₱0.00" step="0.01" />
+        </div>
+
+        <div class="form-group button-group span-2">
+            <button class="btn primary full-width-btn" onclick="addProduct()" style="margin-top: 10px;">
+                Save Product & Update Inventory
+            </button>
+        </div>
+    </div>
+</section>
+
+        <section class="card" style="margin-top: 20px;">
+            <h2>Current Inventory</h2>
+            <div id="categoryTabs" class="category-tabs" style="margin-bottom:15px;"></div>
+            <input type="text" id="inventorySearch" placeholder="Search..." style="margin-bottom: 15px; width: 100%;" onkeyup="renderInventory()">
+            <div id="inventoryList" class="inventory-table-container" style="max-height: 400px; overflow-y: auto;">
+                </div>
+        </section>
+    </div>
+
+    <div class="right-column">
+        <section class="card">
+            <h2 style="margin-top:0;">Log Raw Delivery</h2>
+            <div class="inventory-form-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="form-group span-2">
+                    <label>Material Name</label>
+                    <input type="text" id="rawMaterialName" placeholder="Octopus, Flour, etc.">
+                </div>
+                <div class="form-group">
+                    <label>Delivered</label>
+                    <input type="date" id="deliveryDate">
+                </div>
+                <div class="form-group">
+                    <label>Expiry</label>
+                    <input type="date" id="expiryDate">
+                </div>
+                <div class="form-group">
+                    <label>Qty</label>
+                    <input type="text" id="rawQty" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <button class="btn primary" onclick="addRawDelivery()" style="margin-top: 25px; width:100%;">Log</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" style="margin-top: 20px;">
+            <h2>Expiry Tracker</h2>
+            <div class="inventory-table-container" style="max-height: 550px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="background: #f4f4f4; position: sticky; top: 0;">
+                            <th onclick="sortRawMaterials('name')" style="cursor:pointer; padding:8px;">Item ↕</th>
+                            <th onclick="sortRawMaterials('expiry')" style="cursor:pointer; padding:8px;">Expiry ↕</th>
+                            <th style="padding:8px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rawMaterialsList"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card" style="margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+        <h2 style="margin: 0;">Inventory Activity Log</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="date" id="logDateStart" onchange="renderInventoryLog()" class="btn" style="background: white; color: black; border: 1px solid #ccc; padding: 5px;">
+            <span style="font-size: 0.8rem;">to</span>
+            <input type="date" id="logDateEnd" onchange="renderInventoryLog()" class="btn" style="background: white; color: black; border: 1px solid #ccc; padding: 5px;">
+            <button class="btn" onclick="clearLogFilters()" style="padding: 5px 10px; background: #666;">Reset</button>
+        </div>
+    </div>
+    
+    <div class="inventory-table-container" style="max-height: 400px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+            <thead>
+                <tr style="background: #f4f4f4; position: sticky; top: 0; z-index: 5;">
+                    <th style="padding:10px; text-align:left;">Date & Time</th>
+                    <th style="padding:10px; text-align:left;">Action</th>
+                    <th style="padding:10px; text-align:left;">User</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryLogList"></tbody>
+        </table>
+    </div>
+</section>
+
+    </div>
+</main>
+
+<script src="js/database.js"></script>
+<script src="js/inventory.js"></script>
+</body>
+</html>

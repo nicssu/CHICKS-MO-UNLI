@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>System Login — ICHI-BOO</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    :root {
+        --primary-red: #d32f2f; 
+        --dark-bg: #1a1a1a;
+        --glass-shadow: 0 0 15px rgba(0,0,0,0.5); /* Helps text pop */
+    }
+
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--dark-bg);
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    .login-dashboard {
+        position: relative;
+        width: 90%;
+        max-width: 950px;
+        height: 650px;
+        background: #000; /* Black base for the logo to sit on */
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+        overflow: hidden;
+    }
+
+    /* THE LOGO - Adjusted to be visible but not blinding */
+    .dashboard-bg-logo {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.6; /* Balanced brightness */
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    /* DARK TINT - Ensures text is readable over the red logo */
+    .overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.4); 
+        z-index: 2;
+    }
+
+    .content-area {
+        position: relative;
+        z-index: 3; /* Above logo and overlay */
+        text-align: center;
+        width: 100%;
+        padding: 40px;
+    }
+
+    .system-header {
+        margin-bottom: 50px;
+    }
+
+    .system-header h1 {
+        font-size: 3.5rem; /* Bigger for big screens */
+        font-weight: 900;
+        color: #ffffff; /* White text */
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        line-height: 1.1;
+        text-shadow: var(--glass-shadow);
+    }
+
+    .system-header p {
+        font-size: 1.4rem;
+        color: #ffffff; 
+        font-weight: 600;
+        letter-spacing: 6px;
+        margin-top: 10px;
+        text-transform: uppercase;
+        text-shadow: var(--glass-shadow);
+    }
+
+    .login-form {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .pin-label {
+        font-size: 1.1rem;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 15px;
+        display: block;
+        text-shadow: var(--glass-shadow);
+    }
+
+    .pin-input {
+        width: 100%;
+        padding: 20px 0;
+        font-size: 5rem; /* Massive dots */
+        text-align: center;
+        letter-spacing: 30px;
+        border: none;
+        border-bottom: 5px solid #ffffff;
+        background: transparent;
+        color: #ffffff; /* White dots */
+        outline: none;
+        margin-bottom: 40px;
+        text-shadow: var(--glass-shadow);
+    }
+
+    .pin-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 25px;
+        background-color: #ffffff; /* White button */
+        color: var(--primary-red); /* Red text on button */
+        border: none;
+        border-radius: 15px;
+        font-size: 1.6rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .login-btn:hover {
+        background-color: #eeeeee;
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+    }
+    
+  </style>
+</head>
+<body>
+
+    <div class="login-dashboard">
+        <img src="css/img/logo.png" alt="" class="dashboard-bg-logo">
+        
+        <div class="overlay"></div>
+
+        <div class="content-area">
+            <div class="system-header">
+                <h1>CHICKS MO UNLI</h1>
+                <p>POS Management System</p>
+            </div>
+
+            <div class="login-form">
+    <span class="pin-label">Secure Access Required</span>
+    <input id="adminPassword" type="password" class="pin-input" placeholder="••••" maxlength="4">
+    
+    <div style="margin-top: 10px; text-align: right;">
+        <a href="#" onclick="showRecoveryModal()" style="color: rgba(255,255,255,0.6); font-size: 0.8rem; text-decoration: none;">Forgot PIN?</a>
+    </div>
+
+    <button class="login-btn" onclick="login()">Enter System</button>
+</div>
+
+<div id="recoveryModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center; flex-direction:column; color:white;">
+    <div class="card" style="background:#222; padding:30px; border-radius:15px; border:1px solid var(--primary-red); width:320px; text-align:center;">
+        <h3>Account Recovery</h3>
+        <p style="font-size:0.8rem; color:#ccc; margin-bottom:20px;">Contact your Manager or use the Master Admin PIN to reset.</p>
+        <input id="recoveryMasterPin" type="password" placeholder="Master Admin PIN" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:none;">
+        <button class="btn primary" onclick="verifyRecovery()" style="width:100%;">Verify Admin</button>
+        <button class="btn" onclick="hideRecoveryModal()" style="background:transparent; color:white; margin-top:10px;">Cancel</button>
+    </div>
+</div>
+    </div>
+
+  <script src="js/database.js"></script> 
+  <script src="js/login.js"></script>
+</body>
+</html>

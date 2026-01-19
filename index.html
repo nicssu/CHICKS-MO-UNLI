@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ICHI-BOO Takoyaki</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        
+        #video-wrapper {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; background: #000;
+        }
+
+        video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        .skip-btn {
+            position: fixed; bottom: 20px; right: 20px; z-index: 100;
+            color: white; background: rgba(0,0,0,0.6); padding: 8px 16px;
+            border-radius: 4px; cursor: pointer; border: 1px solid #444; font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="video-wrapper">
+        <video id="splash-video" muted playsinline preload="auto">
+            <source src="css/img/splash.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="skip-btn" onclick="goToLogin()">Skip →</div>
+
+    <script>
+        const video = document.getElementById('splash-video');
+
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+
+        window.onload = function() {
+            video.muted = true;
+            video.volume = 0;
+
+            // Start slightly in to avoid the black frame issue
+            video.currentTime = 0.1;
+
+            // Attempt to play
+            const playPromise = video.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log("Autoplay started");
+                }).catch(error => {
+                    // If the browser blocks it, we show the skip button 
+                    // but don't automatically jump to login so the user has a chance to see it
+                    console.log("Autoplay blocked by browser.");
+                });
+            }
+        };
+
+        // ONLY go to login when the video ends naturally
+        video.onended = goToLogin;
+
+        // EMERGENCY FALLBACK: 
+        // Only skip if the video fails to load entirely after 5 seconds
+        setTimeout(() => {
+            if (video.readyState < 3 && video.currentTime <= 0.1) {
+                goToLogin();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
