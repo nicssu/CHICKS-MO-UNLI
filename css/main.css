@@ -623,19 +623,31 @@ textarea:focus {
     border-radius: 8px;
 }
 
-/* --- PRINT STYLES --- */
+/* --- CONSOLIDATED PRINT STYLES --- */
 @media print {
-    /* 1. Hide everything on the page (Nav, Buttons, Grids) */
+    /* 1. Hide everything on the page by default */
     body * { 
-        visibility: hidden; 
+        visibility: hidden !important; 
     }
 
-    /* 2. Only show the receipt card and its contents */
+    /* 2. Show the POS Receipt (Standard) */
     #receiptCard, #receiptCard * { 
-        visibility: visible; 
+        visibility: visible !important; 
     }
 
-    /* 3. Position the receipt at the very top-left of the paper */
+    /* 3. Show the Audit Report (Only when the 'printing-audit' class is active) */
+    body.printing-audit .audit-print-area, 
+    body.printing-audit .audit-print-area * {
+        visibility: visible !important;
+    }
+
+    /* 4. Show the Transaction Log (Only when the 'printing-log' class is active) */
+    body.printing-log .transaction-log-container, 
+    body.printing-log .transaction-log-container * {
+        visibility: visible !important;
+    }
+
+    /* 5. Position the Receipt at the top-left for the thermal printer */
     #receiptCard {
         position: absolute;
         left: 0;
@@ -647,51 +659,19 @@ textarea:focus {
         box-shadow: none !important;
     }
 
-    /* 4. Hide the "Print Receipt" button so it doesn't print on the paper */
-    #receiptCard button { 
-        display: none; 
-    }
-}
-
-@media (max-width: 768px) {
-    .inventory-activity-header {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 10px;
-    }
-}
-
-
-@media print {
-    /* 1. Hide everything by default */
-    body * {
-        visibility: hidden !important;
-    }
-
-    /* 2. ONLY show the Audit Report IF we are printing the Audit */
-    body.printing-audit .audit-print-area, 
-    body.printing-audit .audit-print-area * {
-        visibility: visible !important;
-    }
-
-    /* 3. ONLY show the Transaction Log IF we are printing the Log */
-    body.printing-log .transaction-log-container, 
-    body.printing-log .transaction-log-container * {
-        visibility: visible !important;
-    }
-
-    /* 4. Formatting for both */
-    .audit-print-area, .transaction-log-container {
+    /* 6. Formatting for Audit/Log Reports to take up the full page */
+    body.printing-audit .audit-print-area,
+    body.printing-log .transaction-log-container {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
-        box-shadow: none !important;
-        border: none !important;
+        background: white !important;
+        color: black !important;
     }
 
-    /* 5. Always hide buttons during print */
-    button, .btn, .btn-action, .btn-print-log {
-        display: none !important;
+    /* 7. Hide all buttons and interactive elements from the final paper */
+    button, .btn, .btn-action, .btn-print, .btn-print-log, #receiptCard button { 
+        display: none !important; 
     }
 }
