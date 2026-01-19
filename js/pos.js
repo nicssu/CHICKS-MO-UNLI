@@ -425,6 +425,19 @@ function renderReceipt(sale) {
     receiptContent.innerHTML = receiptHTML;
 }
 
+function printReceipt() {
+    const printContents = document.getElementById('receiptCard').innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    // Temporarily replace body content with just the receipt to ensure clean printing
+    document.body.innerHTML = printContents;
+    window.print();
+    
+    // Restore the original POS interface
+    document.body.innerHTML = originalContents;
+    location.reload(); // Reload to re-bind all button listeners
+}
+
 window.addEventListener("DOMContentLoaded", () => {
     // Attempt to restore employee session
     const storedEmployeeId = sessionStorage.getItem("currentEmployeeId");
@@ -452,4 +465,5 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("paymentReceived").addEventListener("input", updatePaymentAndChange);
     document.getElementById("checkoutBtn").addEventListener("click", checkout);
     document.getElementById("cancelOrderBtn").addEventListener("click", clearOrder);
+
 });
